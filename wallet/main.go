@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"os"
+	"wallet/core"
+)
 
 func main() {
-	fmt.Print("hello world from go")
+	wallet := core.NewWallet()
+	scanner := bufio.NewScanner(os.Stdin)
+	runner := core.NewWalletApplicationRunner(wallet, scanner)
+	runner.Run()
 }
