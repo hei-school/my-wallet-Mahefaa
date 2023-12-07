@@ -1,0 +1,20 @@
+{
+  "type": "module",
+  "name": "cc-d1-my-wallet-mahefaa",
+  "version": "1.0.0",
+  "description": "wallet app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hei-school/cc-d1-my-wallet-Mahefaa.git"
+  },
+  "author": "Mahefaa",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/hei-school/cc-d1-my-wallet-Mahefaa/issues"
+  },
+  "homepage": "https://github.com/hei-school/cc-d1-my-wallet-Mahefaa#readme"
+}
