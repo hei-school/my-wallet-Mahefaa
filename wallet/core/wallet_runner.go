@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"strconv"
+	"wallet/exception"
 )
 
 type WalletApplicationRunner struct {
@@ -45,7 +46,12 @@ func (r *WalletApplicationRunner) handleChoice(choice int) {
 	case 2:
 		r.wallet.Close()
 	case 3:
-		fmt.Printf("Balance: $%.2f\n", r.wallet.GetBalance())
+		result := finallySkippedResolveWithoutPanic(func() (any, error) {
+			return r.wallet.GetBalance()
+		})
+		if result != nil {
+			fmt.Printf("Balance: $%.2f\n", result)
+		}
 	case 4:
 		fmt.Print("Enter withdrawal amount: $")
 		withdrawalAmount, err := strconv.ParseFloat(r.scanner.Text(), 64)
@@ -53,17 +59,25 @@ func (r *WalletApplicationRunner) handleChoice(choice int) {
 			fmt.Println("Invalid input. Please enter a valid number.")
 			return
 		}
-		r.wallet.Withdraw(withdrawalAmount)
+		finallySkippedResolveWithoutPanic(func() (any, error) {
+			return r.wallet.Withdraw(withdrawalAmount)
+		})
 	case 5:
 		fmt.Print("Enter card name to store: ")
 		cardName := r.scanner.Text()
-		r.wallet.StoreCard(cardName)
+		finallySkippedResolveWithoutPanic(func() (any, error) {
+			return r.wallet.StoreCard(cardName)
+		})
 	case 6:
 		fmt.Print("Enter card name to retrieve: ")
 		retrieveCardName := r.scanner.Text()
-		r.wallet.GetCard(retrieveCardName)
+		finallySkippedResolveWithoutPanic(func() (any, error) {
+			return r.wallet.GetCard(retrieveCardName)
+		})
 	case 7:
-		fmt.Println("cards =", r.wallet.GetCards())
+		fmt.Println("cards =", finallySkippedResolveWithoutPanic(func() (any, error) {
+			return r.wallet.GetCards()
+		}))
 	case 8:
 		fmt.Print("Enter amount to deposit: $")
 		depositAmount, err := strconv.ParseFloat(r.scanner.Text(), 64)
@@ -71,7 +85,9 @@ func (r *WalletApplicationRunner) handleChoice(choice int) {
 			fmt.Println("Invalid input. Please enter a valid number.")
 			return
 		}
-		r.wallet.Deposit(depositAmount)
+		finallySkippedResolveWithoutPanic(func() (any, error) {
+			return r.wallet.Deposit(depositAmount)
+		})
 	case 0:
 		r.stop()
 	default:
@@ -101,4 +117,10 @@ func (r *WalletApplicationRunner) Run() {
 func (r *WalletApplicationRunner) stop() {
 	r.isRunning = false
 	fmt.Println("Closing Wallet Application")
+}
+
+func finallySkippedResolveWithoutPanic(tryFunc func() (any, error)) any {
+	return exception.ResolveWithoutPanic(tryFunc, func() any {
+		return nil
+	})
 }
