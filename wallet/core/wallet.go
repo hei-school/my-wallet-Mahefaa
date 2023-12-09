@@ -29,14 +29,20 @@ func (w *Wallet) Close() {
 	fmt.Println("Wallet closed.")
 }
 
-func (w *Wallet) GetBalance() float64 {
-	w.checkActionValidity()
+func (w *Wallet) GetBalance() (float64, error) {
+	exception := w.checkActionValidity()
+	if exception != nil {
+		return 0, exception
+	}
 	fmt.Printf("Balance: $%.2f\n", w.balance)
-	return w.balance
+	return w.balance, nil
 }
 
-func (w *Wallet) Withdraw(amount float64) float64 {
-	w.checkActionValidity()
+func (w *Wallet) Withdraw(amount float64) (float64, error) {
+	exception := w.checkActionValidity()
+	if exception != nil {
+		return 0, exception
+	}
 
 	if w.balance < amount {
 		panic(errors.New("Error: Insufficient funds."))
@@ -44,49 +50,59 @@ func (w *Wallet) Withdraw(amount float64) float64 {
 
 	w.balance -= amount
 	fmt.Printf("Withdrawal of $%.2f successful. Remaining balance: $%.2f\n", amount, w.balance)
-	return w.balance
+	return w.balance, nil
 }
 
-func (w *Wallet) StoreCard(cardName string) {
-	w.checkActionValidity()
-
+func (w *Wallet) StoreCard(cardName string) (string, error) {
+	exception := w.checkActionValidity()
+	if exception != nil {
+		return "", exception
+	}
 	if _, exists := w.cards[cardName]; !exists {
 		w.cards[cardName] = struct{}{}
 		fmt.Printf("Card '%s' stored in the wallet.\n", cardName)
+		return cardName, nil
 	} else {
-		fmt.Println("Card already present, having two cards of the same name is not yet implemented.")
+		return "", errors.New(fmt.Sprintf("Card already present, having two cards of the same name is not yet implemented."))
 	}
 }
 
-func (w *Wallet) Deposit(amount float64) float64 {
+func (w *Wallet) Deposit(amount float64) (float64, error) {
+	exception := w.checkActionValidity()
+	if exception != nil {
+		return 0, exception
+	}
 	if amount < 0 {
-		panic(errors.New(fmt.Sprintf("Error: Invalid amount $%.2f", amount)))
+		return 0, errors.New(fmt.Sprintf("Error: Invalid amount $%.2f", amount))
 	}
 
 	w.balance += amount
 	fmt.Printf("Deposit of $%.2f successful. Remaining balance: $%.2f\n", amount, w.balance)
-	return w.balance
+	return w.balance, nil
 }
 
-func (w *Wallet) GetCard(cardName string) string {
-	w.checkActionValidity()
-
+func (w *Wallet) GetCard(cardName string) (string, error) {
+	exception := w.checkActionValidity()
+	if exception != nil {
+		return "", exception
+	}
 	if _, exists := w.cards[cardName]; exists {
 		fmt.Printf("Card '%s' retrieved from the wallet.\n", cardName)
-		return cardName
+		return cardName, nil
 	}
-	panic(errors.New(fmt.Sprintf("Error: Card '%s' not found.", cardName)))
+	return "", errors.New(fmt.Sprintf("Error: Card '%s' not found.", cardName))
 }
 
-func (w *Wallet) GetCards() map[string]struct{} {
-	w.checkActionValidity()
-	return w.cards
+func (w *Wallet) GetCards() (map[string]struct{}, error) {
+	exception := w.checkActionValidity()
+	return w.cards, exception
 }
 
-func (w *Wallet) checkActionValidity() {
+func (w *Wallet) checkActionValidity() error {
 	if !w.isOpen {
-		panic(errors.New("Error: Wallet is closed."))
+		return errors.New("Error: Wallet is closed.")
 	}
+	return nil
 }
 
 func (w *Wallet) GetState() string {
