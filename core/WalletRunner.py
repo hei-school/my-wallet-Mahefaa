@@ -12,11 +12,19 @@ MENU_MESSAGE = """
             7. Get cards
             8. Deposit
             0. Exit
-            Enter your choice:""";
+            Enter your choice:"""
 
 
 def finally_skipped_try_except_logger(try_cb):
     try_except_logger(try_cb, lambda: {})
+
+
+def convert_data(converter, data):
+    try:
+        return converter(data)
+    except ValueError as e:
+        print('invalid argument')
+        return None
 
 
 class WalletRunner:
@@ -28,7 +36,8 @@ class WalletRunner:
         print(self.wallet.get_state())
         print(MENU_MESSAGE)
 
-    def handle_choice(self, choice: int):
+    def handle_choice(self, choice):
+        choice = convert_data(int, choice)
         match choice:
             case 1:
                 self.wallet.open()
@@ -37,8 +46,9 @@ class WalletRunner:
             case 3:
                 try_except_logger(lambda: self.wallet.get_balance(), lambda: {})
             case 4:
-                withdrawal_amount = float(input("Enter withdrawal amount: $"))
-                finally_skipped_try_except_logger(lambda: self.wallet.withdraw(withdrawal_amount))
+                withdrawal_amount = input("Enter withdrawal amount: $")
+                amount = convert_data(float, withdrawal_amount)
+                if amount is not None: finally_skipped_try_except_logger(lambda: self.wallet.withdraw(amount))
             case 5:
                 card_name = input("Enter card name to store: ")
                 finally_skipped_try_except_logger(lambda: self.wallet.store_card(card_name))
@@ -48,8 +58,9 @@ class WalletRunner:
             case 7:
                 finally_skipped_try_except_logger(lambda: print(self.wallet.get_cards()))
             case 8:
-                deposit_amount = float(input("Enter amount to deposit: $"))
-                finally_skipped_try_except_logger(lambda: self.wallet.deposit(deposit_amount))
+                deposit_amount = input("Enter amount to deposit: $")
+                amount = convert_data(float, deposit_amount)
+                if amount is not None: finally_skipped_try_except_logger(lambda: self.wallet.deposit(amount))
             case 0:
                 self.stop()
 
@@ -63,7 +74,7 @@ class WalletRunner:
         while self.is_running:
             self.show_menu()
 
-            choice = int(input(""))
+            choice = input("")
 
             self.handle_choice(choice)
 
