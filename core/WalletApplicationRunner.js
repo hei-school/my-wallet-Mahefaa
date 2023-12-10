@@ -18,7 +18,7 @@ export default class WalletApplicationRunner {
         this.showMenu();
 
         this.userInputReader.question("", (answer) => {
-            this.continuedTryCatchLogger(() => this.handleChoice(parseInt(answer)))
+            this.continuedTryCatchLogger(() => this.handleChoice(answer))
         })
     }
 
@@ -48,7 +48,12 @@ export default class WalletApplicationRunner {
     }
 
     handleChoice(choice) {
-        switch (choice) {
+        let number = parseInt(choice);
+        if (isNaN(number)) {
+            console.log("unknown Argument, try again")
+            return;
+        }
+        switch (number) {
             case 1: {
                 this.wallet.open();
                 break;
@@ -64,17 +69,21 @@ export default class WalletApplicationRunner {
                 tryCatchLogger(() => {
                     balance = this.wallet.getBalance();
                 }, () => {
-                    if (balance === undefined){
-                        throw new Error("balance must not be undefined")
-                    }
                 })
-                console.log(`current balance is ${balance}`);
+                if (balance !== undefined)
+                    console.log(`current balance is ${balance}`);
                 break;
             }
 
             case 4 : {
                 this.userInputReader.question("enter amount to withdraw ; ", answer => {
-                    this.continuedTryCatchLogger(() => this.wallet.withdraw(parseInt(answer)));
+                    this.continuedTryCatchLogger(() => {
+                        if (isNaN(parseFloat(answer))) {
+                            console.log("unknown Argument, try again")
+                            return;
+                        }
+                        this.wallet.withdraw(answer)
+                    });
                 })
                 break;
             }
@@ -98,16 +107,19 @@ export default class WalletApplicationRunner {
             }
             case 8 : {
                 this.userInputReader.question("enter amount to deposit ; ", answer => {
-                    this.continuedTryCatchLogger(() => this.wallet.deposit(parseInt(answer)));
+                    this.continuedTryCatchLogger(() => {
+                        if (isNaN(parseFloat(answer))) {
+                            console.log("unknown Argument, try again")
+                            return;
+                        }
+                        this.wallet.deposit(answer)
+                    });
                 })
                 break;
             }
             case 0: {
                 this.stop()
                 break;
-            }
-            default : {
-                throw new Error("unknown Argument")
             }
         }
     }
